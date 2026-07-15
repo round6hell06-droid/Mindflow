@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MindFlow · Dual Mode</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: linear-gradient(145deg, #e5f6ff 0%, #f5fcff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .phone-frame {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 48px;
+      box-shadow: 0 25px 50px -10px rgba(0, 20, 40, 0.25);
+      padding: 18px 16px 24px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .screen-container {
+      position: relative;
+      min-height: 600px;
+      overflow: hidden;
+      border-radius: 32px;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 8px 4px 16px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .screen.active { display: flex; }
+
+    @keyframes fadeUp {
+      0% { opacity: 0.3; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SPLASH */
+    #splash {
+      justify-content: center;
+      align-items: center;
+      min-height: 560px;
+      gap: 8px;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: 700;
+      color: #1a2b5c;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .logo span { color: #2fcf7d; background: rgba(47, 207, 125, 0.12); padding: 0 8px; border-radius: 20px; }
+    .subhead { color: #3d4f6f; font-size: 17px; background: rgba(255,255,255,0.4); padding: 4px 18px; border-radius: 40px; }
+
+    /* HOME */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 14px;
+      padding: 0 2px;
+    }
+
+    .coin-pill {
+      background: white;
+      padding: 6px 18px 6px 16px;
+      border-radius: 40px;
+      font-weight: 600;
+      color: #1a2b5c;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+
+    .icon-btn {
+      background: white;
+      border: none;
+      border-radius: 30px;
+      width: 42px;
+      height: 42px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+      transition: 0.15s;
+      color: #1f345a;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .btn {
+      width: 100%;
+      max-width: 280px;
+      padding: 15px;
+      border: none;
+      border-radius: 40px;
+      font-size: 18px;
+      font-weight: 600;
+      background: #4f7aff;
+      color: white;
+      box-shadow: 0 8px 18px rgba(79, 122, 255, 0.25);
+      cursor: pointer;
+      transition: 0.15s;
+      margin-top: 10px;
+    }
+    .btn:active { transform: scale(0.96); }
+
+    .btn-arrow {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      box-shadow: 0 8px 18px rgba(238, 90, 36, 0.3);
+    }
+
+    .btn-outline {
+      background: white;
+      color: #1f345a;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .btn-outline:active { background: #f5f9ff; }
+
+    .btn-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .back-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 0 12px 0;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-radius: 40px;
+      padding: 6px 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1f345a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .back-btn:active { transform: scale(0.94); }
+
+    h2 { font-size: 26px; font-weight: 700; color: #16203a; margin: 2px 0 10px 0; }
+
+    /* GAMEPLAY COMMON */
+    .game-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0 12px 0;
+    }
+
+    .game-level-badge {
+      background: white;
+      padding: 6px 18px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #1a2b5c;
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+
+    .game-progress {
+      background: white;
+      padding: 6px 16px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 16px;
+      color: #1a2b5c;
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    .game-area {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(4px);
+      border-radius: 32px;
+      padding: 30px 20px 40px;
+      margin: 8px 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-prompt {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1a2b5c;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .game-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .game-option {
+      background: white;
+      border: 2px solid #dce6f0;
+      border-radius: 20px;
+      padding: 18px 8px;
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a2b5c;
+      cursor: pointer;
+      transition: 0.12s;
+      text-align: center;
+    }
+    .game-option:active { transform: scale(0.94); background: #f0f7ff; }
+    .game-option.correct { border-color: #2fcf7d; background: #e6f9ef; }
+    .game-option.wrong { border-color: #ff6b6b; background: #ffe8e8; }
+
+    .game-status {
+      margin-top: 18px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a2b5c;
+    }
+
+    .game-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #d9e3f0;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 10px 0 6px;
+    }
+
+    .game-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4f7aff, #2fcf7d);
+      border-radius: 20px;
+      transition: width 0.3s ease;
+    }
+
+    .difficulty-tag {
+      font-size: 13px;
+      padding: 2px 14px;
+      border-radius: 30px;
+      font-weight: 500;
+    }
+    .diff-easy { background: #e6f9ef; color: #1f8f5a; }
+    .diff-medium { background: #fff3d6; color: #b8770a; }
+    .diff-hard { background: #ffe0e0; color: #b33a3a; }
+    .diff-expert { background: #e0d6ff; color: #5a3ab3; }
+
+    .mt-1 { margin-top: 6px; }
+    .mt-2 { margin-top: 12px; }
+    .w-full { width: 100%; }
+    .text-center { text-align: center; }
+    .flex-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    /* ARROW CHALLENGE SPECIFIC */
+    .arrow-display {
+      font-size: 80px;
+      line-height: 1.2;
+      margin: 10px 0;
+      padding: 20px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 30px;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .arrow-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .arrow-option {
+      background: white;
+      border: 2px solid #dce6f0;
+      border-radius: 20px;
+      padding: 16px 8px;
+      font-size: 40px;
+      cursor: pointer;
+      transition: 0.12s;
+      text-align: center;
+    }
+    .arrow-option:active { transform: scale(0.92); background: #f0f7ff; }
+    .arrow-option.correct { border-color: #2fcf7d; background: #e6f9ef; }
+    .arrow-option.wrong { border-color: #ff6b6b; background: #ffe8e8; }
+
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 300px;
+      margin: 8px 0;
+    }
+
+    .mode-btn {
+      padding: 14px;
+      border: 2px solid #dce6f0;
+      border-radius: 20px;
+      background: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.15s;
+      text-align: center;
+    }
+    .mode-btn.active-mode { border-color: #4f7aff; background: #e8f0ff; }
+    .mode-btn:active { transform: scale(0.94); }
+
+    .setting-item {
+      width: 100%;
+      background: rgba(255,255,255,0.7);
+      padding: 14px 18px;
+      border-radius: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    .daily-progress {
+      background: rgba(255,255,255,0.5);
+      border-radius: 40px;
+      padding: 8px 16px;
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (max-width: 420px) {
+      .phone-frame { padding: 12px; }
+      .logo { font-size: 40px; }
+      .arrow-display { font-size: 60px; padding: 14px; }
+      .arrow-option { font-size: 32px; padding: 12px 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="screen-container">
+
+    <!-- SPLASH -->
+    <div id="splash" class="screen active">
+      <div class="logo">Mind<span>Flow</span></div>
+      <div class="subhead">Relax • Focus • Flow</div>
+      <div style="margin-top:30px;opacity:0.4;font-size:13px;color:#4a6580;">loading ...</div>
+    </div>
+
+    <!-- HOME -->
+    <div id="home" class="screen">
+      <div class="top-bar">
+        <div class="coin-pill">💧 <span id="coinDisplay">5</span></div>
+        <button class="icon-btn" onclick="openSettings()">⚙️</button>
+      </div>
+      <div class="logo" style="font-size:40px;">Mind<span>Flow</span></div>
+      <div class="subhead" style="margin-top:0px;">Relax. Focus. Flow.</div>
+
+      <div class="mode-selector">
+        <button class="mode-btn active-mode" onclick="startMaths()">🧮 Maths</button>
+        <button class="mode-btn" onclick="startArrow()">🏹 Arrow</button>
+      </div>
+
+      <button class="btn" onclick="startMaths()">▶ Play Maths</button>
+      <button class="btn btn-arrow" onclick="startArrow()">▶ Arrow Challenge</button>
+
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="openLevelSelect()">📋 All Levels</button>
+        <button class="btn btn-outline" onclick="showDaily()">📅 Daily Challenge</button>
+        <button class="btn btn-outline" onclick="openSettings()">⚡ Settings</button>
+      </div>
+
+      <div class="daily-progress mt-2">
+        <span style="font-weight:500;color:#1f345a;">📆 Jul 15 · 18/20</span>
+        <div class="flex-row">
+          <div style="width:80px;height:6px;background:#d9e3f0;border-radius:20px;overflow:hidden;">
+            <div style="height:100%;width:65%;background:#4f7aff;border-radius:20px;"></div>
+          </div>
+          <span style="font-size:13px;font-weight:500;">65%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL SELECT -->
+    <div id="levelSelect" class="screen">
+      <div class="back-row">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <span style="font-weight:600;font-size:18px;color:#1a2b5c;">All 5000 Levels</span>
+      </div>
+      <div style="width:100%;display:flex;align-items:center;gap:10px;margin:6px 0 10px;background:rgba(255,255,255,0.4);padding:6px 14px;border-radius:40px;border:1px solid rgba(255,255,255,0.5);">
+        <input type="number" id="levelJump" min="1" max="5000" placeholder="Level #" value="1" style="flex:1;padding:8px 12px;border:none;border-radius:30px;font-size:16px;font-weight:600;background:white;color:#1a2b5c;outline:none;text-align:center;">
+        <button onclick="jumpToLevel()" style="background:#4f7aff;border:none;color:white;padding:8px 18px;border-radius:30px;font-weight:600;cursor:pointer;font-size:14px;">Go</button>
+      </div>
+      <div class="mini-grid" id="miniGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;max-height:200px;overflow-y:auto;padding:4px 2px;">
+        <!-- rendered by JS -->
+      </div>
+      <button class="btn" style="margin-top:12px;background:#2fcf7d;box-shadow:0 8px 18px #2fcf7d40;" onclick="startMaths()">▶ Start Maths</button>
+      <button class="btn btn-arrow" style="margin-top:6px;" onclick="startArrow()">▶ Start Arrow</button>
+    </div>
+
+    <!-- MATHS GAMEPLAY -->
+    <div id="gameplay" class="screen">
+      <div class="game-header">
+        <button class="back-btn" onclick="quitGame()">✕ Quit</button>
+        <span class="game-level-badge" id="gameLevelDisplay">Level 1</span>
+        <span class="game-progress" id="gameProgressDisplay">0%</span>
+      </div>
+
+      <div class="game-area">
+        <div class="game-prompt" id="gamePrompt">?</div>
+        <div class="game-options" id="gameOptions">
+          <div class="game-option" data-index="0">-</div>
+          <div class="game-option" data-index="1">-</div>
+          <div class="game-option" data-index="2">-</div>
+          <div class="game-option" data-index="3">-</div>
+        </div>
+        <div class="game-status" id="gameStatus">Tap an option</div>
+        <div class="game-progress-bar"><div class="game-progress-fill" id="gameProgressFill" style="width:0%;"></div></div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+          <span class="difficulty-tag diff-easy" id="diffTag">Easy</span>
+          <span style="font-size:14px;color:#45607c;">Score: <span id="scoreDisplay">0</span></span>
+        </div>
+      </div>
+      <button class="btn" style="background:#4f7aff;" onclick="nextQuestion()">Next →</button>
+    </div>
+
+    <!-- ARROW CHALLENGE -->
+    <div id="arrowGame" class="screen">
+      <div class="game-header">
+        <button class="back-btn" onclick="quitArrow()">✕ Quit</button>
+        <span class="game-level-badge" id="arrowLevelDisplay">Level 1</span>
+        <span class="game-progress" id="arrowProgressDisplay">0%</span>
+      </div>
+
+      <div class="game-area">
+        <div style="font-size:16px;font-weight:500;color:#45607c;margin-bottom:4px;">Which direction is this?</div>
+        <div class="arrow-display" id="arrowDisplay">↑</div>
+        <div class="arrow-options" id="arrowOptions">
+          <div class="arrow-option" data-arrow="↑">↑</div>
+          <div class="arrow-option" data-arrow="↓">↓</div>
+          <div class="arrow-option" data-arrow="←">←</div>
+          <div class="arrow-option" data-arrow="→">→</div>
+        </div>
+        <div class="game-status" id="arrowStatus">Tap a direction</div>
+        <div class="game-progress-bar"><div class="game-progress-fill" id="arrowProgressFill" style="width:0%;"></div></div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+          <span class="difficulty-tag diff-easy" id="arrowDiffTag">Easy</span>
+          <span style="font-size:14px;color:#45607c;">Score: <span id="arrowScoreDisplay">0</span></span>
+        </div>
+      </div>
+      <button class="btn btn-arrow" onclick="nextArrowQuestion()">Next →</button>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings" class="screen">
+      <div class="back-row">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <span style="font-weight:600;font-size:20px;color:#1a2b5c;">Settings</span>
+      </div>
+      <div class="setting-item"><span>🎵 Music</span><input type="checkbox" checked></div>
+      <div class="setting-item"><span>🔊 Sound</span><input type="checkbox" checked></div>
+      <div class="setting-item"><span>📳 Vibration</span><input type="checkbox"></div>
+      <div class="setting-item" onclick="alert('⭐ Rate us 5 stars!')"><span>⭐ Rate Us</span><span style="color:#7a8aa8;">→</span></div>
+      <div style="margin-top:16px;font-size:13px;color:#6b7f99;">MindFlow v2.4.1 · 5000 levels</div>
+    </div>
+
+    <!-- DAILY -->
+    <div id="daily" class="screen">
+      <div class="back-row">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <span style="font-weight:600;font-size:18px;color:#1a2b5c;">Daily Challenge</span>
+        <span style="background:#2fcf7d;color:white;border-radius:40px;padding:2px 14px;font-size:13px;font-weight:600;">Jul 15</span>
+      </div>
+      <div style="width:100%;background:rgba(255,255,255,0.5);border-radius:30px;padding:14px;border:1px solid rgba(255,255,255,0.6);margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span><span style="font-weight:600;">Unlock at Level 20</span> <span style="background:#4f7aff20;padding:2px 14px;border-radius:30px;">18/20</span></span>
+          <span style="font-size:14px;">⭐ 35%</span>
+        </div>
+        <div style="width:100%;height:6px;background:#d9e3f0;border-radius:20px;margin-top:6px;"><div style="height:100%;width:35%;background:#4f7aff;border-radius:20px;"></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;">
+        <div style="background:white;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:500;border:1px solid #e2ecf5;">Day 1</div>
+        <div style="background:white;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:500;border:1px solid #e2ecf5;">Day 2</div>
+        <div style="background:white;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:500;border:1px solid #e2ecf5;">Day 3</div>
+        <div style="background:white;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:500;border:1px solid #e2ecf5;">Day 4</div>
+        <div style="background:white;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:500;border:1px solid #e2ecf5;">Day 5</div>
+        <div style="background:#d4e6ff;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:600;border:1px solid #9bc0f0;color:#0047b3;">Day 16 ⭐</div>
+        <div style="background:#d4e6ff;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:600;border:1px solid #9bc0f0;color:#0047b3;">Day 17 ⭐</div>
+        <div style="background:#d4e6ff;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;font-weight:600;border:1px solid #9bc0f0;color:#0047b3;">Day 18 ⭐</div>
+        <div style="background:#eef5fa;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;border:1px dashed #b0c8dd;">Day 19</div>
+        <div style="background:#eef5fa;border-radius:16px;padding:6px 0;text-align:center;font-size:12px;border:1px dashed #b0c8dd;">Day 20</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ============ GLOBAL STATE ============
+  let currentLevel = 1;
+  let coins = 5;
+
+  // ============ MATHS STATE ============
+  let mathsScore = 0;
+  let mathsAnswered = 0;
+  const Q_PER_LEVEL = 5;
+  let mathsQuestions = [];
+  let mathsIndex = 0;
+  let isMathsAnswering = false;
+
+  // ============ ARROW STATE ============
+  let arrowScore = 0;
+  let arrowAnswered = 0;
+  let arrowQuestions = [];
+  let arrowIndex = 0;
+  let isArrowAnswering = false;
+  const ARROWS = ['↑', '↓', '←', '→'];
+
+  // ============ SCREEN MANAGEMENT ============
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
+  }
+
+  function goHome() { showScreen('home'); }
+  function openSettings() { showScreen('settings'); }
+  function showDaily() { showScreen('daily'); }
+  function openLevelSelect() { showScreen('levelSelect'); renderMiniGrid(); }
+
+  // ============ MATHS GAME ============
+  function getDifficulty(level) {
+    if (level <= 5) return { label: 'Easy', class: 'diff-easy', range: [1, 10] };
+    if (level <= 50) return { label: 'Medium', class: 'diff-medium', range: [5, 25] };
+    if (level <= 200) return { label: 'Hard', class: 'diff-hard', range: [10, 50] };
+    return { label: 'Expert', class: 'diff-expert', range: [20, 100] };
+  }
+
+  function generateMathsQuestion(level) {
+    const diff = getDifficulty(level);
+    const [min, max] = diff.range;
+    const a = Math.floor(Math.random() * (max - min + 1)) + min;
+    const b = Math.floor(Math.random() * (max - min + 1)) + min;
+    const ops = ['+', '-', '×'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let answer, display;
+    if (op === '+') { answer = a + b; display = `${a} + ${b}`; }
+    else if (op === '-') { answer = a - b; display = `${a} - ${b}`; }
+    else { answer = a * b; display = `${a} × ${b}`; }
+
+    let options = new Set([answer]);
+    let attempts = 0;
+    while (options.size < 4 && attempts < 100) {
+      let offset = Math.floor(Math.random() * Math.max(5, Math.floor(Math.abs(answer * 0.4)))) + 1;
+      if (Math.random() > 0.5) offset = -offset;
+      let w = answer + offset;
+      if (w !== answer && w >= 0 && w < 999) options.add(w);
+      attempts++;
+    }
+    let optArr = Array.from(options);
+    while (optArr.length < 4) {
+      let fallback = Math.floor(Math.random() * 50) + 1;
+      if (!optArr.includes(fallback) && fallback !== answer) optArr.push(fallback);
+    }
+    for (let i = optArr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [optArr[i], optArr[j]] = [optArr[j], optArr[i]];
+    }
+    return { display, answer, options: optArr, difficulty: diff.label };
+  }
+
+  function loadMathsLevel(level) {
+    currentLevel = Math.min(5000, Math.max(1, level));
+    mathsQuestions = [];
+    for (let i = 0; i < Q_PER_LEVEL; i++) {
+      mathsQuestions.push(generateMathsQuestion(currentLevel));
+    }
+    mathsIndex = 0;
+    mathsAnswered = 0;
+    isMathsAnswering = false;
+    updateMathsUI();
+    renderMathsQuestion();
+  }
+
+  function renderMathsQuestion() {
+    if (mathsIndex >= mathsQuestions.length) {
+      document.getElementById('gameStatus').textContent = '🎉 Level Complete!';
+      document.getElementById('gamePrompt').textContent = '✅ Well Done!';
+      document.querySelectorAll('.game-option').forEach(el => el.style.display = 'none');
+      coins += 2;
+      document.getElementById('coinDisplay').textContent = coins;
+      return;
+    }
+    const q = mathsQuestions[mathsIndex];
+    document.getElementById('gamePrompt').textContent = q.display;
+    document.getElementById('gameStatus').textContent = `Question ${mathsIndex+1}/${Q_PER_LEVEL}`;
+    const options = document.querySelectorAll('.game-option');
+    options.forEach((el, idx) => {
+      el.textContent = q.options[idx] || '?';
+      el.style.display = 'block';
+      el.className = 'game-option';
+      el.dataset.correct = (q.options[idx] === q.answer) ? 'true' : 'false';
+    });
+    document.getElementById('gameProgressFill').style.width = ((mathsAnswered / Q_PER_LEVEL) * 100) + '%';
+    document.getElementById('gameProgressDisplay').textContent = Math.round((mathsAnswered / Q_PER_LEVEL) * 100) + '%';
+    const diff = getDifficulty(currentLevel);
+    const tag = document.getElementById('diffTag');
+    tag.textContent = diff.label;
+    tag.className = 'difficulty-tag ' + diff.class;
+    isMathsAnswering = false;
+  }
+
+  function updateMathsUI() {
+    document.getElementById('gameLevelDisplay').textContent = `Level ${currentLevel}`;
+    document.getElementById('scoreDisplay').textContent = mathsScore;
+    document.getElementById('coinDisplay').textContent = coins;
+  }
+
+  // Maths option click
+  document.querySelectorAll('.game-option').forEach(el => {
+    el.addEventListener('click', function() {
+      if (isMathsAnswering) return;
+      if (mathsIndex >= mathsQuestions.length) return;
+      isMathsAnswering = true;
+      const isCorrect = this.dataset.correct === 'true';
+      if (isCorrect) {
+        this.classList.add('correct');
+        mathsScore += 10;
+        document.getElementById('scoreDisplay').textContent = mathsScore;
+        document.getElementById('gameStatus').textContent = '✅ Correct! +10';
+      } else {
+        this.classList.add('wrong');
+        document.getElementById('gameStatus').textContent = '❌ Wrong!';
+        document.querySelectorAll('.game-option').forEach(opt => {
+          if (opt.dataset.correct === 'true') opt.classList.add('correct');
+        });
+      }
+      mathsAnswered++;
+      document.getElementById('gameProgressFill').style.width = ((mathsAnswered / Q_PER_LEVEL) * 100) + '%';
+      document.getElementById('gameProgressDisplay').textContent = Math.round((mathsAnswered / Q_PER_LEVEL) * 100) + '%';
+      mathsIndex++;
+      setTimeout(() => { renderMathsQuestion(); }, 800);
+    });
+  });
+
+  function nextQuestion() {
+    if (mathsIndex < mathsQuestions.length) {
+      renderMathsQuestion();
+    } else {
+      if (currentLevel < 5000) {
+        currentLevel++;
+        loadMathsLevel(currentLevel);
+      } else {
+        document.getElementById('gameStatus').textContent = '🏆 All 5000 done!';
+      }
+    }
+  }
+
+  function startMaths() {
+    showScreen('gameplay');
+    loadMathsLevel(currentLevel);
+  }
+
+  function quitGame() { showScreen('home'); }
+
+  // ============ ARROW CHALLENGE ============
+  function generateArrowQuestion(level) {
+    const diff = getDifficulty(level);
+    // Sometimes show arrow, sometimes show word
+    const showArrow = Math.random() > 0.3;
+    const arrow = ARROWS[Math.floor(Math.random() * ARROWS.length)];
+    const display = showArrow ? arrow : arrow;
+    // Options: all 4 arrows
+    let options = ['↑', '↓', '←', '→'];
+    // shuffle
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    return { display, answer: arrow, options, difficulty: diff.label };
+  }
+
+  function loadArrowLevel(level) {
+    currentLevel = Math.min(5000, Math.max(1, level));
+    arrowQuestions = [];
+    for (let i = 0; i < Q_PER_LEVEL; i++) {
+      arrowQuestions.push(generateArrowQuestion(currentLevel));
+    }
+    arrowIndex = 0;
+    arrowAnswered = 0;
+    isArrowAnswering = false;
+    updateArrowUI();
+    renderArrowQuestion();
+  }
+
+  function renderArrowQuestion() {
+    if (arrowIndex >= arrowQuestions.length) {
+      document.getElementById('arrowStatus').textContent = '🎉 Level Complete!';
+      document.getElementById('arrowDisplay').textContent = '✅';
+      document.querySelectorAll('.arrow-option').forEach(el => el.style.display = 'none');
+      coins += 2;
+      document.getElementById('coinDisplay').textContent = coins;
+      return;
+    }
+    const q = arrowQuestions[arrowIndex];
+    document.getElementById('arrowDisplay').textContent = q.display;
+    document.getElementById('arrowStatus').textContent = `Question ${arrowIndex+1}/${Q_PER_LEVEL}`;
+    const options = document.querySelectorAll('.arrow-option');
+    options.forEach((el, idx) => {
+      el.textContent = q.options[idx] || '?';
+      el.style.display = 'block';
+      el.className = 'arrow-option';
+      el.dataset.arrow = q.options[idx] || '';
+      el.dataset.correct = (q.options[idx] === q.answer) ? 'true' : 'false';
+    });
+    document.getElementById('arrowProgressFill').style.width = ((arrowAnswered / Q_PER_LEVEL) * 100) + '%';
+    document.getElementById('arrowProgressDisplay').textContent = Math.round((arrowAnswered / Q_PER_LEVEL) * 100) + '%';
+    const diff = getDifficulty(currentLevel);
+    const tag = document.getElementById('arrowDiffTag');
+    tag.textContent = diff.label;
+    tag.className = 'difficulty-tag ' + diff.class;
+    isArrowAnswering = false;
+  }
+
+  function updateArrowUI() {
+    document.getElementById('arrowLevelDisplay').textContent = `Level ${currentLevel}`;
+    document.getElementById('arrowScoreDisplay').textContent = arrowScore;
+    document.getElementById('coinDisplay').textContent = coins;
+  }
+
+  // Arrow option click
+  document.querySelectorAll('.arrow-option').forEach(el => {
+    el.addEventListener('click', function() {
+      if (isArrowAnswering) return;
+      if (arrowIndex >= arrowQuestions.length) return;
+      isArrowAnswering = true;
+      const isCorrect = this.dataset.correct === 'true';
+      if (isCorrect) {
+        this.classList.add('correct');
+        arrowScore += 10;
+        document.getElementById('arrowScoreDisplay').textContent = arrowScore;
+        document.getElementById('arrowStatus').textContent = '✅ Correct! +10';
+      } else {
+        this.classList.add('wrong');
+        document.getElementById('arrowStatus').textContent = '❌ Wrong!';
+        document.querySelectorAll('.arrow-option').forEach(opt => {
+          if (opt.dataset.correct === 'true') opt.classList.add('correct');
+        });
+      }
+      arrowAnswered++;
+      document.getElementById('arrowProgressFill').style.width = ((arrowAnswered / Q_PER_LEVEL) * 100) + '%';
+      document.getElementById('arrowProgressDisplay').textContent = Math.round((arrowAnswered / Q_PER_LEVEL) * 100) + '%';
+      arrowIndex++;
+      setTimeout(() => { renderArrowQuestion(); }, 800);
+    });
+  });
+
+  function nextArrowQuestion() {
+    if (arrowIndex < arrowQuestions.length) {
+      renderArrowQuestion();
+    } else {
+      if (currentLevel < 5000) {
+        currentLevel++;
+        loadArrowLevel(currentLevel);
+      } else {
+        document.getElementById('arrowStatus').textContent = '🏆 All 5000 done!';
+      }
+    }
+  }
+
+  function startArrow() {
+    showScreen('arrowGame');
+    loadArrowLevel(currentLevel);
+  }
+
+  function quitArrow() { showScreen('home'); }
+
+  // ============ LEVEL JUMP ============
+  function jumpToLevel() {
+    const input = document.getElementById('levelJump');
+    let val = parseInt(input.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 5000) val = 5000;
+    currentLevel = val;
+    input.value = val;
+    renderMiniGrid();
+    document.querySelectorAll('.mini-grid .lvl').forEach(el => {
+      el.classList.toggle('current', parseInt(el.dataset.level) === currentLevel);
+    });
+  }
+
+  function renderMiniGrid() {
+    const grid = document.getElementById('miniGrid');
+    grid.innerHTML = '';
+    let start = Math.max(1, currentLevel - 50);
+    let end = Math.min(5000, currentLevel + 49);
+    for (let i = start; i <= end; i++) {
+      const div = document.createElement('div');
+      div.className = 'lvl';
+      if (i === currentLevel) div.classList.add('current');
+      div.dataset.level = i;
+      div.textContent = i;
+      div.style.cssText = 'background:white;border-radius:12px;padding:6px 0;text-align:center;font-size:12px;font-weight:600;color:#1f345a;border:1px solid #e2ecf5;cursor:pointer;transition:0.1s;';
+      if (i === currentLevel) div.style.cssText += 'border-color:#4f7aff;background:#e8f0ff;';
+      div.addEventListener('click', function() {
+        currentLevel = parseInt(this.dataset.level);
+        document.getElementById('levelJump').value = currentLevel;
+        renderMiniGrid();
+      });
+      grid.appendChild(div);
+    }
+  }
+
+  // ============ INIT ============
+  setTimeout(() => { showScreen('home'); }, 1600);
+  document.getElementById('coinDisplay').textContent = coins;
+  document.getElementById('levelJump').value = 1;
+  loadMathsLevel(1);
+  loadArrowLevel(1);
+
+  console.log('🧘 MindFlow · Maths + Arrow Challenge · 5000 levels');
+</script>
+</body>
+</html>
